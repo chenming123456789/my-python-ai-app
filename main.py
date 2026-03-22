@@ -126,3 +126,50 @@ document_info = {
 
 # 4. 打印最后两个标签 (利用切片)
 print(f"最后的标签: {document_info['tags'][-2:]}")
+
+def greet(name, role="User"):
+    # 注意冒号 : 和 4个空格的缩进
+    if name:
+        return f"Hello, {name}"
+    return "Hello, Guest" # 缩进结束，if 也就结束了
+
+def send_msg(content, role, model="gpt-4"):
+    print(f"[{model}] {role}: {content}")
+
+# 1. 位置参数 (Positional): 必须按顺序
+send_msg("你好", "user") 
+
+# 2. 关键字参数 (Keyword): 顺序可以乱，可读性极强
+send_msg(role="admin", content="重启系统", model="claude-3")
+
+def ai_orchestrator(task, *tools, **config):
+    print(f"任务: {task}")
+    print(f"使用的工具列表: {tools}") # 这是一个元组
+    print(f"模型配置: {config}")      # 这是一个字典
+
+# 调用
+ai_orchestrator(
+    "解析文档", 
+    "PDFLoader", "OCR-Tool", "TextSplitter", # 这三个会被 *tools 收集
+    model="gpt-4o", temperature=0, stream=True # 这些会被 **config 收集
+)
+
+score = 85
+if score >= 90:
+    print("优秀")
+elif score >= 80:
+    print("良好")
+elif score >= 60: # 对应 JS 的 else if
+    print("及格")
+else:
+    print("不及格")
+
+def format_ai_response(content, status_code=200, **metadata):
+    meta_str = ",".join([f"{k}: {v}" for k,v in metadata.items()])
+    if status_code == 200:
+        return f"内容: {content.upper()},元数据: [{meta_str}]"
+    else: return "Error"
+
+result = format_ai_response("Hello AI", model="gpt-4", usage=150, gender='man', age=25)
+print(result)
+    
