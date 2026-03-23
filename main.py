@@ -172,4 +172,51 @@ def format_ai_response(content, status_code=200, **metadata):
 
 result = format_ai_response("Hello AI", model="gpt-4", usage=150, gender='man', age=25)
 print(result)
+
+# 1. 读取文本文件（对标 fs.readFile）
+# 读取 txt / md 文件
+# with open("test.txt", "r", encoding="utf-8") as f:
+#     content = f.read()
+
+print(content)
+
+import json # 1. 必须先导入内置的 json 库
+
+# 2. 写入文本文件（对标 fs.writeFile）
+# 覆盖写入
+with open("test.txt", "w", encoding="utf-8") as f:
+    f.write("我是写入的内容\n换行")
+
+# 追加写入
+with open("test.txt", "a", encoding="utf-8") as f:
+    f.write("追加内容")
+
+# 准备一个典型的 AI 配置字典
+config = {
+    "model": "gpt-4o",
+    "temperature": 0.7,
+    "max_tokens": 1000,
+    "stream": True
+}
+
+# --- 任务 1: 把字典存进 json 文件 ---
+with open("config.json", "w", encoding="utf-8") as f:
+    # json.dump (没有 s) 是直接把对象“甩”进文件流
+    # indent=4 让生成的 JSON 像 VSCode 格式化过一样漂亮
+    json.dump(config, f, indent=4)
+    print("✅ config.json 已创建！")
+
+# --- 任务 2: 从 json 文件读回数据 ---
+with open("config.json", "r", encoding="utf-8") as f:
+    # json.load (没有 s) 是直接从文件流里解析出字典
+    new_config = json.load(f)
+    print(f"读取到的模型是: {new_config['model']}")
     
+res_str = format_ai_response("Hello AI", model="a", usage=150, gender='man', age=25)
+
+# 使用 "a" 模式（Append 追加），配合 f.write()
+with open("chat.log", "a", encoding="utf-8") as f:
+    # 记得加 \n，否则下一条日志会跟这一条连在一起
+    f.write(res_str + "\n")
+    print("✅ 日志已追加到 chat.log！")
+
