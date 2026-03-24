@@ -1,6 +1,7 @@
 # --- 第 2 天：列表(List) 与 字典(Dict) 实战 ---
 
 # 1. 列表 (对应 JS 的 Array)
+from datetime import datetime
 fruits = ["apple", "banana", "cherry"]
 fruits.append("orange")  # 对应 JS 的 push()
 print(f"我的水果清单: {fruits}") # f-string 是 Python 的模板字符串 (类似 `...`)
@@ -220,3 +221,72 @@ with open("chat.log", "a", encoding="utf-8") as f:
     f.write(res_str + "\n")
     print("✅ 日志已追加到 chat.log！")
 
+# 1. 整体导入 (类似 const fs = require('fs'))
+import json
+json.dumps({})
+
+# 2. 部分导入 (类似 import { readFile } from 'fs')
+from os import path
+if path.exists("chat.log"):
+    print("日志文件存在")
+
+# 3. 别名导入 (类似 import * as api from './api')
+import datetime as dt
+print(dt.datetime.now())
+
+import json
+import os
+
+def load_ai_config(file_path):
+    try:
+        # 1.尝试读取
+        with open(file_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # 2. 处理“文件找不到了”
+        print(f"⚠️ 找不到 {file_path}，正在创建默认配置...")
+        default_config = {"model": "gpt-4", "temp": 0.7}
+        # 顺手创建一个默认的
+        with open(file_path, "w") as f:
+            json.dump(default_config, f)
+        return default_config
+    except json.JSONDecodeError:
+        # 3. 处理“文件内容坏了”（比如你手抖在 JSON 里多写了个逗号）
+        print(f"❌ {file_path} 格式损坏！请检查 JSON 语法。")
+        return None
+    except Exception as e:
+        # 4. 兜底方案
+        print(f"发生了意外错误: {e}")
+        return None
+    finally:
+        # 无论如何都会执行
+        print("运行结束")
+# --- 调用测试 ---
+config = load_ai_config("ai_config.json")
+if config:
+   print(f"🚀 准备就绪，当前模型: {config['model']}")
+
+import datetime
+import json
+def save_log(message):
+    try:
+        now = datetime.datetime.now()
+        # 格式化一下时间，不然默认格式太长了
+        time_str = now.strftime("%Y-%m-%d %H:%M:%S")
+        with open("app.log", 'a', encoding="utf-8") as f:
+            f.write(f"[{time_str} {message}\n]")
+        print(f"✅ 日志已记录: {message}")
+    except FileNotFoundError:
+        print("⚠️ 文件夹路径不存在")
+    except json.JSONDecodeError:
+      # 这里的 e 会抓住所有的错误（包括刚才的传参错误）
+        print(f"发生了意外错误: {type(e).__name__} - {e}")
+        return None
+    except Exception as e:
+          # 4. 兜底方案
+        print(f"发生了意外错误: {e}")
+        return None
+
+# --- 测试一下 ---
+save_log("用户陈明启动了 AI 助手")
+save_log("正在连接 OpenAI 接口...")
