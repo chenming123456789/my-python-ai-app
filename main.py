@@ -357,3 +357,48 @@ recorder.add_log("发送了一个 RAG 请求")
 
 # 读取并展示结果
 recorder.read_logs()
+
+from typing import Optional
+
+def get_ai_response(prompt: str, max_tokens: int = 100) -> str:
+    # prompt: str 表示参数必须是字符串
+    # -> str 表示返回值必须是字符串
+    print(f"AI 对 {prompt} 的回答")
+    return f"AI 对 {prompt} 的回答"
+
+from pydantic import BaseModel, Field
+# 1. 定义一个“数据模型”，就像 TS 的 interface
+class AIMessage(BaseModel):
+    role: str                       # 必须是字符串
+    content: str                    # 必须是内容
+    timestamp: float                # 必须是浮点数
+    tags: list[str] = []            # 默认是空列表
+    score: Optional[float] = None   # 可选字段
+
+# 2. 实战：数据校验
+# 假设这是从 API 收到的原始 JSON 字典
+raw_data = {
+    "role": "assistant",
+    "content": "你好！",
+    "timestamp": 1711395600.0
+}
+
+# 3. 实例化（会自动校验数据类型！）
+msg = AIMessage(**raw_data) # 还记得 ** 展开字典吗？
+# 如果 raw_data 里的 timestamp 传了个字符串 "abc"，Pydantic 会直接报错！
+print(f"角色: {msg.role}, 内容: {msg.content}")
+
+class AppConfig(BaseModel):
+    app_name: str
+    version: float
+    api_key: str
+    is_pro: bool = False
+
+data = {
+    "app_name": "MyAI", 
+    "version": 1.0, 
+    "api_key": "sk-xxx"
+}
+
+appData = AppConfig(**data)
+print(f"应用: {appData.app_name}, 版本: {appData.version}")
