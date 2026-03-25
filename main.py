@@ -290,3 +290,70 @@ def save_log(message):
 # --- 测试一下 ---
 save_log("用户陈明启动了 AI 助手")
 save_log("正在连接 OpenAI 接口...")
+
+# 第 2 周 类
+class AIChat:
+    # 1. 构造函数 (注意是双下划线)
+    def __init__(self, mode_name, temp = 0.7):
+        self.model = mode_name  # 相当于 this.model = model_name
+        self.temp = temp
+        self.history = []
+    
+    # 2. 类的方法 (第一个参数必须写 self)
+    def ask(self, question):
+        self.history.append(question)
+        print(f"正在使用 {self.model} (温度:{self.temp}) 回答: {question}")
+
+# --- 使用方式 ---
+# 注意：不需要 new 关键字！
+my_bot = AIChat("gpt-4o", temp=0.5)
+my_bot.ask("什么是 RAG？")
+
+# 基类 (Base Class)
+class BaseBot:
+    def greet(self):
+        print("你好，我是 AI 助手")
+
+# 派生类 (Subclass) - 继承 BaseBot
+class ProBot(BaseBot):
+    def __init__(self, name):
+        self.name = name
+    
+    # 重写方法
+    def greet(self):
+        super().greet() # 调用父类方法
+        print(f"我是高级版 {self.name}")
+
+# --- 使用方式 ---
+pro = ProBot("大圣")
+pro.greet()
+
+class AIRecorder:
+    def __init__(self, user_name, log_file = "chat.log"):
+        self.user_name = user_name
+        self.log_file = log_file
+
+    def add_log(self, msg):
+        now = datetime.datetime.now()
+        # 格式化一下时间，不然默认格式太长了
+        time_str = now.strftime("%Y-%m-%d %H:%M:%S")
+        with open(self.log_file, 'a', encoding="utf-8") as f:
+            f.write(f"[{time_str} {self.user_name} {msg}]\n")
+        print(f"✅ 已记录")
+
+    def read_logs(self):
+        print(f"--- 正在读取 {self.log_file} ---")
+        try:
+            with open(self.log_file, 'r', encoding="utf-8") as f:
+                print(f.read())
+        except FileNotFoundError:
+            print("⚠️ 还没有任何日志记录。")
+# --- 🚀 运行验证 ---
+recorder = AIRecorder("ChenMing") # 使用默认的 chat.log
+
+# 模拟记录两条对话
+recorder.add_log("启动 AI 助手")
+recorder.add_log("发送了一个 RAG 请求")
+
+# 读取并展示结果
+recorder.read_logs()
