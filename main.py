@@ -1,6 +1,8 @@
 # --- 第 2 天：列表(List) 与 字典(Dict) 实战 ---
 
 # 1. 列表 (对应 JS 的 Array)
+from httpx import AsyncClient
+import asyncio
 from datetime import datetime
 fruits = ["apple", "banana", "cherry"]
 fruits.append("orange")  # 对应 JS 的 push()
@@ -510,3 +512,119 @@ if isinstance(data, dict):
     print(f"🌍 你的公网 IP 是: {data['ip']}")
 else:
     print(data)
+
+
+import asyncio
+
+# 异步函数 = async function
+async def hello():
+    print("Hello")
+    await asyncio.sleep(1)  # 等待1秒，不阻塞
+    print("World")
+
+# 运行异步主函数
+async def main():
+    await hello()
+
+# 启动！
+asyncio.run(main())
+
+# 同步（和 requests 一样）
+import httpx
+res = httpx.get("https://httpbin.org/get")
+
+# 异步（只需加 async/await）
+async def test():
+    async with httpx.AsyncClient() as client:
+        res = await client.get("https://httpbin.org/get")
+
+import time
+
+# 1. 定义一个异步请求函数
+async def fetch_ai_response(model_name: str, delay:int):
+    print(f"🚀 [{model_name}] 开始请求 (预计耗时 {delay}s)...")
+
+    # 异步客户端，类似 axios.create()
+    async with httpx.AsyncClient() as client:
+        # 模拟向不同模型发请求
+        # 实际开发中这里换成 OpenAI 或 Claude 的 URL
+        url = f"https://httpbin.org/delay/{delay}"
+
+        responses = await client.get(url, timeout=10)
+        print(f"✅ [{model_name}] 响应成功！")
+        return f"{model_name} 的回答内容"
+
+# 2. 异步主函数 (类似 JS 的 async main)
+async def main():
+    start_time = time.time()
+
+    # 💡 并发执行：Promise.all 的 Python 版
+    # 我们同时发起两个请求，一个耗时 3秒，一个耗时 2秒
+    print("--- 任务开始 ---")
+
+    responses = await asyncio.gather(
+        fetch_ai_response("GPT-4", 3),
+        fetch_ai_response("Claude-3", 2)
+    )
+
+    end_time = time.time()
+    print(f"\n结果汇总: {responses}")
+    print(f"⏱️ 总耗时: {end_time - start_time:.2f} 秒")
+    # 猜猜总耗时是 5秒 还是 3秒？(答案是 3秒，因为是并发的)
+
+# 3. 启动引擎 (这是 Python 特有的启动方式)
+if __name__ == "__main__":
+    asyncio.run(main())
+
+async def get_ip_async():
+    async with httpx.AsyncClient() as client:
+        url = "https://api.ipify.org?format=json"
+        res = await client.get(url)
+        return "成功"
+
+async def main():
+    start_time = time.time()
+    responses = await asyncio.gather(
+        get_ip_async(),
+        get_ip_async(),
+        get_ip_async(),
+    )
+    end_time = time.time()
+
+    print(f"\n结果汇总: {responses}")
+    print(f"⏱️ 总耗时: {end_time - start_time:.2f} 秒")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+import asyncio
+import httpx
+import time
+
+# 1. 接收 client 作为参数，复用连接池
+async def get_ip_async(client: httpx.AsyncClient):
+    url = "https://api.ipify.org?format=json"
+    res = await client.get(url)
+    return res.json()["ip"]
+
+async def main():
+    start_time = time.time()
+    
+    # 2. 在外层只开启一个 Client
+    async with httpx.AsyncClient() as client:
+        # 3. 将同一个 client 传给所有任务
+        tasks = [get_ip_async(client) for _ in range(3)]
+        # *相当于...扩展运算符
+        responses = await asyncio.gather(*tasks)
+
+    end_time = time.time()
+    print(f"IP 列表: {responses}")
+    print(f"⏱️ 总耗时: {end_time - start_time:.2f} 秒")
+
+# Python 在执行任何 .py 文件时，都会自动给这个文件定义一个隐藏变量 __name__：
+# 如果你在终端敲 python main.py，Python 解释器会把这个文件的 __name__ 设为 "__main__"
+# 如果你在另一个文件 app.py 里写了 import main，那么在 main.py 运行时，它的 __name__ 就会变成它的文件名 "main"。
+# 只有当我直接运行 python main.py 时，这里才执行
+# 如果我是被别人 import 的，这里会被跳过
+if __name__ == "__main__":
+    asyncio.run(main())
