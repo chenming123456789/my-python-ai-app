@@ -402,3 +402,111 @@ data = {
 
 appData = AppConfig(**data)
 print(f"应用: {appData.app_name}, 版本: {appData.version}")
+
+import requests
+
+url = "https://httpbin.org/get"
+
+# 带参数
+params = {
+    "name": "chenming",
+    "age": 25
+}
+
+resData = requests.get(url, params=params)
+data = resData.json()  # 自动转字典 = resData.data
+print(data)
+
+url = "https://httpbin.org/post"
+
+# 请求体
+payload = {
+    "username": "admin",
+    "password": "123456"
+}
+
+# 发送 JSON
+res = requests.post(url, json=payload)
+data = res.json()
+
+print(data)
+
+# 带 Token 请求
+url = "https://your-llm-api.com/chat"
+
+headers = {
+    "Authorization": "Bearer sk-xxxxxxxxxxxx",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "model": "qianfan",
+    "messages": [{"role": "user", "content": "你好"}]
+}
+
+res = requests.post(url, headers=headers, json=payload)
+print(res.json())
+
+print(res.status_code)
+
+def call_mock_ai_api(prompt: str):
+    # 1. 准备请求地址 (这是个模拟地址)
+    url = "https://httpbin.org/post"
+
+    # 2. 准备 Headers (对应 axios 的 config.headers)
+    headers = {
+        "Authorization": "Bearer sk-your-token-123",
+        "Content-Type": "application/json"
+    }
+
+    # 3. 准备 Body (对应 axios 的 data)
+    # 💡 关键：用 json= 参数，requests 会自动帮你做 JSON.stringify()
+    payload = {
+        "model": "gpt-4o",
+        "messages": [{"role": "user", "content": prompt}]
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        if response.status_code == 200:
+           # 6. 解析数据 (对应 res.data)
+            data = response.json()
+            # httpbin 会把我们发过去的内容原样返回在 'json' 字段里
+            print(f"✅ 成功连接 API，发送的内容是: {data['json']['messages'][0]['content']}")
+        else:
+            print(f"❌ 请求失败，状态码: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        # 捕获网络超时、断网等错误
+        print(f"📡 网络连接异常: {e}")
+
+# --- 测试一下 ---
+call_mock_ai_api("帮我写一个 Python 爬虫")
+if result:
+    print("\n--- API 返回结果 ---")
+    print(result)
+
+def call_ai_api(format: str):
+    # 1. 准备请求地址 (这是个模拟地址)
+    url = "https://api.ipify.org"
+    params = {
+        "format": format
+    }
+    try:
+        # 加上 timeout 是好习惯，防止程序死等
+        res = requests.get(url, params=params, timeout=5)
+        
+        # 2. 如果是 json 模式，直接返回解析后的字典
+        if format == "json":
+            return res.json()  # 相当于 JSON.parse(res.data)
+        
+        return res.text
+    except Exception as e:
+        return f"请求出错了: {e}"
+
+# --- 调用 ---
+data = call_ai_api("json")
+# 像访问 JS 对象一样（只是改用方括号）
+if isinstance(data, dict):
+    print(f"🌍 你的公网 IP 是: {data['ip']}")
+else:
+    print(data)
