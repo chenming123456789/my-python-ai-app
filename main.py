@@ -415,9 +415,9 @@ params = {
     "age": 25
 }
 
-resData = requests.get(url, params=params)
-data = resData.json()  # 自动转字典 = resData.data
-print(data)
+# resData = requests.get(url, params=params)
+# data = resData.json()  # 自动转字典 = resData.data
+# print(data)
 
 url = "https://httpbin.org/post"
 
@@ -428,10 +428,10 @@ payload = {
 }
 
 # 发送 JSON
-res = requests.post(url, json=payload)
-data = res.json()
+# res = requests.post(url, json=payload)
+# data = res.json()
 
-print(data)
+# print(data)
 
 # 带 Token 请求
 url = "https://your-llm-api.com/chat"
@@ -446,10 +446,10 @@ payload = {
     "messages": [{"role": "user", "content": "你好"}]
 }
 
-res = requests.post(url, headers=headers, json=payload)
-print(res.json())
+# res = requests.post(url, headers=headers, json=payload)
+# print(res.json())
 
-print(res.status_code)
+# print(res.status_code)
 
 def call_mock_ai_api(prompt: str):
     # 1. 准备请求地址 (这是个模拟地址)
@@ -482,10 +482,10 @@ def call_mock_ai_api(prompt: str):
         print(f"📡 网络连接异常: {e}")
 
 # --- 测试一下 ---
-call_mock_ai_api("帮我写一个 Python 爬虫")
-if result:
-    print("\n--- API 返回结果 ---")
-    print(result)
+# call_mock_ai_api("帮我写一个 Python 爬虫")
+# if result:
+#     print("\n--- API 返回结果 ---")
+#     print(result)
 
 def call_ai_api(format: str):
     # 1. 准备请求地址 (这是个模拟地址)
@@ -506,12 +506,12 @@ def call_ai_api(format: str):
         return f"请求出错了: {e}"
 
 # --- 调用 ---
-data = call_ai_api("json")
-# 像访问 JS 对象一样（只是改用方括号）
-if isinstance(data, dict):
-    print(f"🌍 你的公网 IP 是: {data['ip']}")
-else:
-    print(data)
+# data = call_ai_api("json")
+# # 像访问 JS 对象一样（只是改用方括号）
+# if isinstance(data, dict):
+#     print(f"🌍 你的公网 IP 是: {data['ip']}")
+# else:
+#     print(data)
 
 
 import asyncio
@@ -573,8 +573,8 @@ async def main():
     # 猜猜总耗时是 5秒 还是 3秒？(答案是 3秒，因为是并发的)
 
 # 3. 启动引擎 (这是 Python 特有的启动方式)
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
 
 async def get_ip_async():
     async with httpx.AsyncClient() as client:
@@ -594,8 +594,8 @@ async def main():
     print(f"\n结果汇总: {responses}")
     print(f"⏱️ 总耗时: {end_time - start_time:.2f} 秒")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
 
 import asyncio
 import httpx
@@ -626,5 +626,48 @@ async def main():
 # 如果你在另一个文件 app.py 里写了 import main，那么在 main.py 运行时，它的 __name__ 就会变成它的文件名 "main"。
 # 只有当我直接运行 python main.py 时，这里才执行
 # 如果我是被别人 import 的，这里会被跳过
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
+
+import os
+# pyre-ignore
+from dotenv import load_dotenv
+
+# 1. 加载 .env 文件里的变量到系统环境变量中
+load_dotenv() 
+
+# 2. 读取变量 (对应 JS 的 process.env.xxx)
+api_key = os.getenv("OPENAI_API_KEY")
+model = os.getenv("MODEL_NAME", "gpt-3.5-turbo") # 第二个参数是默认值
+is_debug = os.getenv("DEBUG") == "True" # 注意：取出来全是字符串，需要手动转 bool
+
+print(f"🚀 正在启动模型: {model}")
+
+from pydantic_settings import BaseSettings
+
+# 1. 定义一个配置类，继承自 BaseSettings (Pydantic 的工具)
+class Settings(BaseSettings):
+    
+    # 2. 告诉 Python：去环境变量里找一个叫 OPENAI_API_KEY 的变量
+    # 如果找不到，程序运行到这里直接报错（强约束，防止没 Key 就运行）
+    openai_api_key: str
+    
+    # 3. 找 MODEL_NAME，找不到就用默认值 "gpt-4o"
+    model_name: str = "gpt-4o"
+    
+    # 4. 【重点】找 IS_DEBUG。
+    # 哪怕 .env 里写的是字符串 "false"，它也会帮你转成布尔值 False
+    is_debug: bool = False
+
+    # 5. 配置内部细节：告诉它去读哪个文件
+    class Config:
+        env_file = ".env"
+
+# 实例化后，直接点语法访问，类型全是对的！
+settings = Settings()
+print(f"Key 是: {settings.openai_api_key}")
+print(f"Model 是: {settings.model_name}")
+
+import os
+print(os.getenv("USERNAME") or os.getenv("USER"))
+print(os.path.abspath(__file__))
