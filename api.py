@@ -1,5 +1,6 @@
-from fastapi import FastAPI  # pyre-ignore
-from pydantic import BaseModel # pyre-ignore
+from fastapi import FastAPI, Query  # pyre-ignore
+from pydantic import BaseModel, Field # pyre-ignore
+from typing import Optional # pyre-ignore
 import uvicorn
 
 # 1. 创建应用实例
@@ -15,10 +16,6 @@ async def root():
 async def asy_hello(name: str):
     return {"message": f"你好， {name}!准备好调 AI 了吗？"}
 
-# 4. 启动逻辑 (虽然通常用命令行启动，但写在代码里也行)
-if __name__ == "__api__":
-    uvicorn.run("api:app", host="127.0.0.1", port=8000, reload=True)
-
 # 1. 定义数据结构 (类似 TS Interface)
 class ChatRequest(BaseModel):
     prompt: str
@@ -30,3 +27,38 @@ async def chat(data: ChatRequest):  # FastAPI 看到 BaseModel 就会去解析 R
     # 3. 逻辑处理
     print(f"收到用户提问: {data.prompt}")
     return {"reply": f"你刚才说的是：{data.prompt}吗？", "usage": data.max_tokens}
+
+app = FastAPI()
+
+# 1. 定义 Request Body (对应 TS Interface)
+class ChatRequest(BaseModel):
+    # Field 可以设置校验规则，比如字符串长度、示例等
+    message: str = Field(..., min_length=1, max_length=500, description="用户的提问内容")
+    model: str = Field(default="gpt-4o", description="使用的 AI 模型")
+    temperature: float = Field(default=0.7, ge=0, le=2.0) # ge: >=, le: <=
+
+# 编写POST接口
+@app.post('/chat')
+async def chat_endpoint(data: ChatRequest):
+    # FastAPI 已经帮你校验好了：
+    # - data.message 绝不会为空
+    # - data.temperature 绝不会大于 2.0
+    print(f"使用模型{data.model} 处理: {data.message}")
+    
+    return {
+        "reply": f"你刚才说的是：{data.message}吗？",
+        "config": {"temp": data.temperature}
+    }
+
+# 编写带 Query 参数的接口 (查询历史记录)
+@app.get("/history")
+async def get_history(user_id: int, limit: int = Query(default=10, lt=100) ): # limit 默认 10，必须小于 100
+    return {
+        "user_id": user_id,
+        "limit": limit,
+        "data": ["msg1", "msg2"]
+    }
+    
+# 4. 启动逻辑 (虽然通常用命令行启动，但写在代码里也行)
+if __name__ == "__main__":
+    uvicorn.run("api:app", host="127.0.0.1", port=8000, reload=True)
